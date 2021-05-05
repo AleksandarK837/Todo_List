@@ -26,11 +26,16 @@ public class Collaboration implements Serializable {
         finishedTasks = new ConcurrentHashMap<>();
     }
 
-    public void assignTask(String task, String participant) {
+    public void assignTask(String task, String participant) throws TaskException {
 
         if (!assignTasks.containsKey(participant)) {
             assignTasks.put(participant, new ArrayList<>());
         }
+
+        if (assignTasks.get(participant).contains(task)) {
+            throw new TaskException("User " + participant + " has already task: " + task);
+        }
+
         assignTasks.get(participant).add(task);
     }
 

@@ -3,6 +3,7 @@ package assign;
 import collaboration.Collaboration;
 import exceptions.CollaborationException;
 import exceptions.ParticipantException;
+import exceptions.TaskException;
 import exceptions.UserException;
 
 import java.io.PrintWriter;
@@ -14,7 +15,7 @@ public class AssignTask {
                               String username, String collaborationName,
                               Map<String, Collaboration> collaborations,
                               String taskName,
-                              String participant, PrintWriter out) throws UserException, CollaborationException, ParticipantException {
+                              String participant, PrintWriter out) throws UserException, CollaborationException, ParticipantException, TaskException {
 
         if (!registeredUsers.containsKey(participant)) {
             throw new UserException(participant + " doesn't exist!");
