@@ -225,6 +225,14 @@ public class ClientRequestHandler implements Runnable {
         }
     }
 
+    public Map<String, Collaboration> getCollaborations() {
+        return collaborations;
+    }
+
+    public UserTasks getUserTasks() {
+        return userTasks;
+    }
+
     @Override
     public void run() {
 

@@ -23,6 +23,18 @@ public class UserTasks implements Serializable {
         finishedTasks = new ConcurrentHashMap<>();
     }
 
+    public Map<Task, TaskAttributes> getDateTasks() {
+        return dateTasks;
+    }
+
+    public Map<String, TaskAttributes> getInboxTasks() {
+        return inboxTasks;
+    }
+
+    public Map<Task, TaskAttributes> getFinishedTasks() {
+        return finishedTasks;
+    }
+
     public void addTask(String name, String date, String dueDate, String description) throws TaskException {
 
         if (date.equals("")) {
