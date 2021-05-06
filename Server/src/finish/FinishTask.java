@@ -6,7 +6,7 @@ import java.io.PrintWriter;
 
 public class FinishTask {
 
-    public static void finish(UserTasks userTasks, String taskName, String username, PrintWriter out) throws TaskException {
+    public static void finish(UserTasks userTasks, String taskName, PrintWriter out) throws TaskException {
 
         userTasks.finishTask(taskName, out);
 

@@ -1,12 +1,15 @@
 import add.AddCollaboration;
+import add.AddTask;
 import add.AddUser;
 import assign.AssignTask;
 import collaboration.Collaboration;
 import delete.DeleteCollaboration;
+import delete.DeleteTask;
 import exceptions.CollaborationException;
 import exceptions.ParticipantException;
 import exceptions.TaskException;
 import exceptions.UserException;
+import finish.FinishTask;
 import finish.FinishTaskCollaboration;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -14,6 +17,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import server.ClientRequestHandler;
+import update.UpdateTask;
 import userAccount.UserTasks;
 import userAccount.tasks.Task;
 import userAccount.tasks.TaskAttributes;
@@ -46,11 +50,6 @@ public class ClientRequestHandlerTest {
     static Socket socket;
     static PrintWriter out;
 
-    static ClientRequestHandler userPesho;
-    static ClientRequestHandler userGosho;
-    static ClientRequestHandler userIcko;
-    static ClientRequestHandler userAleks;
-
     @BeforeClass
     public static void setUP() {
         try {
@@ -62,11 +61,6 @@ public class ClientRequestHandlerTest {
             registeredUsers.put(gosho, password);
             registeredUsers.put(icko, password);
             registeredUsers.put(aleks, password);
-
-            userPesho = new ClientRequestHandler(socket, registeredUsers, collaborations);
-            userGosho = new ClientRequestHandler(socket, registeredUsers, collaborations);
-            userIcko = new ClientRequestHandler(socket, registeredUsers, collaborations);
-            userAleks = new ClientRequestHandler(socket, registeredUsers, collaborations);
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -75,65 +69,95 @@ public class ClientRequestHandlerTest {
     }
 
     @Test
-    public void testAddDateTask() {
+    public void testAddDateTask() throws TaskException {
+        final UserTasks userTasks = new UserTasks();
+        String dateTaskAttributes = "lesson 2020-05-30 2020-06-30 math";
 
-        userPesho.checkCommand("add-task lesson 2020-05-30 2020-06-30 math");
-        assertEquals(userPesho.getUserTasks().getDateTasks().get(new Task("lesson", "2020-05-30")),
+        AddTask.addTask(userTasks, dateTaskAttributes);
+        assertEquals(userTasks.getDateTasks().get(new Task("lesson", "2020-05-30")),
                                                                  new TaskAttributes("2020-06-30", "math"));
     }
 
     @Test
-    public void testAddInboxTask() {
+    public void testAddInboxTask() throws TaskException {
+        final UserTasks userTasks = new UserTasks();
+        String inboxTaskAttributes = "lesson math";
 
-        userPesho.checkCommand("add-task lesson math");
-        assertEquals(userPesho.getUserTasks().getInboxTasks().get("lesson"),
+        AddTask.addTask(userTasks, inboxTaskAttributes);
+        assertEquals(userTasks.getInboxTasks().get("lesson"),
                 new TaskAttributes("", "math"));
     }
 
     @Test (expected = TaskException.class)
     public void testAddSameTaskName() throws TaskException {
-        UserTasks tasks = userPesho.getUserTasks();
-        tasks.addTask("Dance", "", "", "math");
-        tasks.addTask("Dance", "", "", "math");
+        final UserTasks userTasks = new UserTasks();
+        String taskAttributes = "dance music";
+
+        AddTask.addTask(userTasks, taskAttributes);
+        AddTask.addTask(userTasks, taskAttributes);
     }
 
     @Test
-    public void testFinishInboxTask() {
-        userPesho.checkCommand("add-task math-lesson math");
-        userPesho.checkCommand("finish-task math-lesson");
+    public void testFinishInboxTask() throws TaskException {
+        final UserTasks userTasks = new UserTasks();
+        String addTaskAttributes = "math-lesson math";
+        String finishTaskAttributes = "math-lesson";
 
-        Assert.assertFalse(userPesho.getUserTasks().getInboxTasks().containsKey("math-lesson"));
-        Assert.assertTrue(userPesho.getUserTasks().getFinishedTasks().containsKey(new Task("math-lesson", LocalDate.now().toString())));
+        AddTask.addTask(userTasks, addTaskAttributes);
+        Assert.assertTrue(userTasks.getInboxTasks().containsKey("math-lesson"));
+
+        FinishTask.finish(userTasks, finishTaskAttributes, out);
+        Assert.assertFalse(userTasks.getInboxTasks().containsKey("math-lesson"));
+        Assert.assertTrue(userTasks.getFinishedTasks().containsKey(new Task("math-lesson", LocalDate.now().toString())));
     }
 
     @Test
-    public void testFinishDateTask() {
-        userPesho.checkCommand("add-task java-lesson 2020-03-03 math");
-        userPesho.checkCommand("finish-task java-lesson");
+    public void testFinishDateTask() throws TaskException {
+        final UserTasks userTasks = new UserTasks();
+        String addTaskAttributes = "java-lesson 2020-03-03 java";
+        String finishTaskAttributes = "java-lesson";
 
-        Assert.assertFalse(userPesho.getUserTasks().getDateTasks().containsKey(new Task("java-lesson", "2020-03-03")));
-        Assert.assertTrue(userPesho.getUserTasks().getFinishedTasks().containsKey(new Task("java-lesson", LocalDate.now().toString())));
+        AddTask.addTask(userTasks, addTaskAttributes);
+        Assert.assertTrue(userTasks.getDateTasks().containsKey(new Task("java-lesson", "2020-03-03")));
+
+        FinishTask.finish(userTasks, finishTaskAttributes, out);
+        Assert.assertFalse(userTasks.getDateTasks().containsKey(new Task("java-lesson", "2020-03-03")));
+        Assert.assertTrue(userTasks.getFinishedTasks().containsKey(new Task("java-lesson", LocalDate.now().toString())));
     }
 
     @Test
-    public void testDeleteTask() {
-        userGosho.checkCommand("add-task lesson math");
-        userGosho.checkCommand("add-task jogging 2020-05-30");
+    public void testDeleteTask() throws TaskException {
+        final UserTasks userTasks = new UserTasks();
 
-        userGosho.checkCommand("delete-task lesson");
-        userGosho.checkCommand("delete-task jogging 2020-05-30");
+        String addInboxTaskAttributes = "lesson math";
+        AddTask.addTask(userTasks, addInboxTaskAttributes);
+        Assert.assertTrue(userTasks.getInboxTasks().containsKey("lesson"));
 
-        Assert.assertFalse(userGosho.getUserTasks().getInboxTasks().containsKey("lesson"));
-        Assert.assertFalse(userGosho.getUserTasks().getDateTasks().containsKey(new Task("jogging", "2020-05-30")));
+        String dateTaskAttributes = "jogging 2020-05-30";
+        AddTask.addTask(userTasks, dateTaskAttributes);
+        Assert.assertTrue(userTasks.getDateTasks().containsKey(new Task("jogging", "2020-05-30")));
+
+        String deleteInboxTaskAttributes = "lesson";
+        DeleteTask.deleteTask(userTasks, deleteInboxTaskAttributes);
+        Assert.assertFalse(userTasks.getInboxTasks().containsKey("lesson"));
+
+        String deleteDateTaskAttributes = "jogging 2020-05-30";
+        DeleteTask.deleteTask(userTasks, deleteDateTaskAttributes);
+        Assert.assertFalse(userTasks.getDateTasks().containsKey(new Task("jogging", "2020-05-30")));
     }
 
     @Test
-    public void testUpdateTask() {
-        userAleks.checkCommand("add-task jogging 2020-05-30");
-        userAleks.checkCommand("update-task jogging 2021-05-30 2021-06-30 park");
+    public void testUpdateTask() throws TaskException {
+        String addTaskAttributes = "jogging 2020-05-30";
+        String updateTaskAttributes = "jogging 2021-05-30 2021-06-30 park";
 
-        Assert.assertFalse(userAleks.getUserTasks().getDateTasks().containsKey(new Task("jogging", "2020-05-30")));
-        Assert.assertTrue(userAleks.getUserTasks().getDateTasks().containsKey(new Task("jogging", "2021-05-30")));
+        final UserTasks userTasks = new UserTasks();
+        AddTask.addTask(userTasks, addTaskAttributes);
+        Assert.assertTrue(userTasks.getDateTasks().containsKey(new Task("jogging", "2020-05-30")));
+
+        UpdateTask.updateTask(userTasks, updateTaskAttributes, out);
+        Assert.assertTrue(userTasks.getDateTasks().containsKey(new Task("jogging", "2021-05-30")));
+        Assert.assertFalse(userTasks.getDateTasks().containsKey(new Task("jogging", "2020-05-30")));
     }
 
     @Test (expected = CollaborationException.class)

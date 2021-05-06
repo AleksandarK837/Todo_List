@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class UserTasks implements Serializable {
+public final class UserTasks implements Serializable {
 
     private final Map<Task, TaskAttributes> dateTasks;
     private final Map<String, TaskAttributes> inboxTasks;
@@ -24,15 +24,15 @@ public class UserTasks implements Serializable {
     }
 
     public Map<Task, TaskAttributes> getDateTasks() {
-        return dateTasks;
+        return new ConcurrentHashMap<>(dateTasks);
     }
 
     public Map<String, TaskAttributes> getInboxTasks() {
-        return inboxTasks;
+        return new ConcurrentHashMap<>(inboxTasks);
     }
 
     public Map<Task, TaskAttributes> getFinishedTasks() {
-        return finishedTasks;
+        return new ConcurrentHashMap<>(finishedTasks);
     }
 
     public void addTask(String name, String date, String dueDate, String description) throws TaskException {

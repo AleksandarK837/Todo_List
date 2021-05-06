@@ -45,15 +45,15 @@ public class Collaboration implements Serializable {
     }
 
     public List<String> getParticipants() {
-        return participants;
+        return new ArrayList<>(participants);
     }
 
     public Map<String, List<String>> getTasks() {
-        return assignTasks;
+        return new ConcurrentHashMap<>(assignTasks);
     }
 
     public Map<String, List<Task>> getFinishedTasks() {
-        return finishedTasks;
+        return new ConcurrentHashMap<>(finishedTasks);
     }
 
     public void addParticipant(String participant) {

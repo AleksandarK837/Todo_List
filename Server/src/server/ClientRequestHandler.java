@@ -21,6 +21,7 @@ import userAccount.UserTasks;
 import java.io.*;
 import java.net.Socket;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ClientRequestHandler implements Runnable {
 
@@ -82,7 +83,7 @@ public class ClientRequestHandler implements Runnable {
                     ListDashboard.listDashboard(userTasks, out);
                     break;
                 case "finish-task":
-                    FinishTask.finish(userTasks, attributes, username, out);
+                    FinishTask.finish(userTasks, attributes, out);
                     break;
                 case "add-collaboration":
                     AddCollaboration.addCollaboration(username, collaborations, attributes, out);
@@ -226,11 +227,7 @@ public class ClientRequestHandler implements Runnable {
     }
 
     public Map<String, Collaboration> getCollaborations() {
-        return collaborations;
-    }
-
-    public UserTasks getUserTasks() {
-        return userTasks;
+        return new ConcurrentHashMap<>(collaborations);
     }
 
     @Override
